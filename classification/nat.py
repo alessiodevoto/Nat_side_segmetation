@@ -119,6 +119,7 @@ class NATBlock(nn.Module):
         self.depth = depth
 
         # init protoypes
+        print('Initializing NAT block with protypes.')
         self.prototypes = torch.nn.Parameter(torch.Tensor(dim, num_classes), requires_grad=True)
         self.prototypes.data.uniform_(-1, 1)
 
