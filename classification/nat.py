@@ -119,7 +119,7 @@ class NATBlock(nn.Module):
         self.depth = depth
 
         # Initialize protoypes.
-        print('Initializing NAT block with protypes.')
+        print('Initializing NAT block with prototypes.')
         self.prototypes = torch.nn.Parameter(torch.Tensor(dim, num_classes), requires_grad=True)
         self.prototypes.data.uniform_(-1, 1)
 
@@ -153,7 +153,9 @@ class NATBlock(nn.Module):
             attentive_prototypes = pixel_classes @ self.prototypes.t()
             x = x + attentive_prototypes
             # apply NAT
+            print(x.shape)
             x = blk(x)
+            print(x.shape)
         if self.downsample is None:
             return x
         return self.downsample(x)
@@ -224,20 +226,29 @@ class NAT(nn.Module):
         return {'rpb'}
 
     def forward_features(self, x):
+        print(f'NAT input: {x.shape}')
         x = self.patch_embed(x)
+        print(f'Patch embed: {x.shape}')
         x = self.pos_drop(x)
+        print(f'Pos drop: {x.shape}')
 
         for level in self.levels:
             x = level(x)
+            print(f'level out: {x.shape}')
 
 
         x = self.norm(x).flatten(1, 2)
+        print(f'flatten 1 out: {x.shape}')
         x = self.avgpool(x.transpose(1, 2))
+        print(f'avg pool out: {x.shape}')
         x = torch.flatten(x, 1)
+        print(f'flatten 2 out: {x.shape}')
         return x
 
     def forward(self, x):
+        print(f'NAT starting: {x.shape}')
         x = self.forward_features(x)
+        print(f'NAT head: {x.shape}')
         x = self.head(x)
         return x
 
