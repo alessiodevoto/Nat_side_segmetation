@@ -118,9 +118,9 @@ class NATBlock(nn.Module):
         self.dim = dim
         self.depth = depth
 
-        # init protoypes
+        # Initialize protoypes.
         print('Initializing NAT block with protypes.')
-        self.prototypes = torch.nn.Parameter(torch.Tensor(dim, num_classes), requires_grad=True)
+        self.prototypes = torch.nn.Parameter(torch.Tensor(depth, num_classes), requires_grad=True)
         self.prototypes.data.uniform_(-1, 1)
 
         self.blocks = nn.ModuleList([
@@ -136,12 +136,15 @@ class NATBlock(nn.Module):
         self.downsample = None if not downsample else ConvDownsampler(dim=dim, norm_layer=norm_layer)
 
     def forward(self, x):
-        print(f'NAT Block processing tensor of size: {x.shape}')
+
+        # This should go before each attention layer.
+        print(f'[NAT Block] Processing tensor of size: {x.shape}')
+
         pixel_classes = self.prototypes @ x
-        print(f'Computed pixel classes of shape: {pixel_classes.shape}')
+        print(f'[NAT Block] Computed pixel classes of shape: {pixel_classes.shape}')
         # apply softmax
         attentive_prototypes = self.prototypes.t() @ pixel_classes
-        print(f'Computed attentive prototypes of shape: {attentive_prototypes.shape}')
+        print(f'[NAT Block] Computed attentive prototypes of shape: {attentive_prototypes.shape}')
 
 
         for blk in self.blocks:
