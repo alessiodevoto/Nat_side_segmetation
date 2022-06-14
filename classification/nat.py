@@ -137,19 +137,19 @@ class NATBlock(nn.Module):
 
     def forward(self, x):
 
-        # This should go before each attention layer.
+        """# This should go before each attention layer.
         print(f'[NAT Block] Processing tensor of size: {x.shape}')
         print(f'[NAT Block] Processing prototypes of size: {self.prototypes.shape}')
         pixel_classes = x @ self.prototypes
         print(f'[NAT Block] Computed pixel classes of shape: {pixel_classes.shape}')
         # apply softmax
         attentive_prototypes = pixel_classes @ self.prototypes.t()
-        print(f'[NAT Block] Computed attentive prototypes of shape: {attentive_prototypes.shape}')
+        print(f'[NAT Block] Computed attentive prototypes of shape: {attentive_prototypes.shape}')"""
 
 
         for blk in self.blocks:
             # learn prototypes
-            pixel_classes = x @ self.prototypes
+            pixel_classes = torch.nn.functional.softmax(x @ self.prototypes, dim=3)
             attentive_prototypes = pixel_classes @ self.prototypes.t()
             x = x + attentive_prototypes
             # apply NAT
