@@ -143,11 +143,16 @@ class NATBlock(nn.Module):
         pixel_classes = x @ self.prototypes
         print(f'[NAT Block] Computed pixel classes of shape: {pixel_classes.shape}')
         # apply softmax
-        attentive_prototypes =  pixel_classes @ self.prototypes.t()
+        attentive_prototypes = pixel_classes @ self.prototypes.t()
         print(f'[NAT Block] Computed attentive prototypes of shape: {attentive_prototypes.shape}')
 
 
         for blk in self.blocks:
+            # learn prototypes
+            pixel_classes = x @ self.prototypes
+            attentive_prototypes = pixel_classes @ self.prototypes.t()
+            x = x + attentive_prototypes
+            # apply NAT
             x = blk(x)
         if self.downsample is None:
             return x
