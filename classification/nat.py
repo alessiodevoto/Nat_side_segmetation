@@ -208,6 +208,7 @@ class NAT(nn.Module):
 
         for level in self.levels:
             x = level(x)
+            print(f'Processing level:{level}')
 
         x = self.norm(x).flatten(1, 2)
         x = self.avgpool(x.transpose(1, 2))
