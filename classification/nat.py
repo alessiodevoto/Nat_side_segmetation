@@ -120,7 +120,7 @@ class NATBlock(nn.Module):
 
         # Initialize protoypes.
         print('Initializing NAT block with protypes.')
-        self.prototypes = torch.nn.Parameter(torch.Tensor(depth, num_classes), requires_grad=True)
+        self.prototypes = torch.nn.Parameter(torch.Tensor(dim, num_classes), requires_grad=True)
         self.prototypes.data.uniform_(-1, 1)
 
         self.blocks = nn.ModuleList([
