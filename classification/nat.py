@@ -248,8 +248,9 @@ class NAT(nn.Module):
     def forward(self, x):
         print(f'NAT starting: {x.shape}')
         x = self.forward_features(x)
-        print(f'NAT head: {x.shape}')
+        print(f'NAT fwd: {x.shape}')
         x = self.head(x)
+        print(f'NAT head: {x.shape}')
         return x
 
 
