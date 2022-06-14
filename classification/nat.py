@@ -110,13 +110,17 @@ class NATLayer(nn.Module):
 
 
 class NATBlock(nn.Module):
-    def __init__(self, dim, depth, num_heads, kernel_size, downsample=True,
+    def __init__(self, dim, depth, num_heads, kernel_size, num_classes=3, downsample=True,
                  mlp_ratio=4., qkv_bias=True, qk_scale=None, drop=0., attn_drop=0.,
                  drop_path=0., norm_layer=nn.LayerNorm,
                  layer_scale=None):
         super().__init__()
         self.dim = dim
         self.depth = depth
+
+        # init protoypes
+        self.prototypes = torch.nn.Parameter(torch.Tensor(dim, num_classes), requires_grad=True)
+        self.prototypes.data.uniform_(-1, 1)
 
         self.blocks = nn.ModuleList([
             NATLayer(dim=dim,
@@ -131,6 +135,14 @@ class NATBlock(nn.Module):
         self.downsample = None if not downsample else ConvDownsampler(dim=dim, norm_layer=norm_layer)
 
     def forward(self, x):
+        print(f'NAT Block processing tensor of size: {x.shape}')
+        pixel_classes = self.prototypes @ x
+        print(f'Computed pixel classes of shape: {pixel_classes.shape}')
+        # apply softmax
+        attentive_prototypes = self.prototypes.t() @ pixel_classes
+        print(f'Computed attentive prototypes of shape: {attentive_prototypes.shape}')
+
+
         for blk in self.blocks:
             x = blk(x)
         if self.downsample is None:
@@ -208,7 +220,7 @@ class NAT(nn.Module):
 
         for level in self.levels:
             x = level(x)
-            print(f'Processing level:{level}')
+
 
         x = self.norm(x).flatten(1, 2)
         x = self.avgpool(x.transpose(1, 2))
