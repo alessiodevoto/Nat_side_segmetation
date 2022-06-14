@@ -139,7 +139,7 @@ class NATBlock(nn.Module):
 
         # This should go before each attention layer.
         print(f'[NAT Block] Processing tensor of size: {x.shape}')
-
+        print(f'[NAT Block] Processing prototypes of size: {self.prototypes.shape}')
         pixel_classes = x @ self.prototypes
         print(f'[NAT Block] Computed pixel classes of shape: {pixel_classes.shape}')
         # apply softmax
