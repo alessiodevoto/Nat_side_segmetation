@@ -94,23 +94,23 @@ class NATLayer(nn.Module):
             self.gamma2 = nn.Parameter(layer_scale * torch.ones(dim), requires_grad=True)
 
     def forward(self, x):
-        print(f'[Nat Layer] Input of size:{x.shape}')
+        print(f'      [Nat Layer] Input of size:{x.shape}')
         if not self.layer_scale:
             shortcut = x
             x = self.norm1(x)
-            print(f'[Nat Layer] Applying NAT to tensor of size:{x.shape}')
+            print(f'      [Nat Layer] Applying NAT to tensor of size:{x.shape}')
             x = self.attn(x)
             x = shortcut + self.drop_path(x)
             x = x + self.drop_path(self.mlp(self.norm2(x)))
-            print(f'[Nat Layer] Output of size:{x.shape}')
+            print(f'      [Nat Layer] Output of size:{x.shape}')
             return x
         shortcut = x
         x = self.norm1(x)
-        print(f'[Nat Layer] Applying NAT to tensor of size:{x.shape}')
+        print(f'      [Nat Layer] Applying NAT to tensor of size:{x.shape}')
         x = self.attn(x)
         x = shortcut + self.drop_path(self.gamma1 * x)
         x = x + self.drop_path(self.gamma2 * self.mlp(self.norm2(x)))
-        print(f'[Nat Layer] Output of size:{x.shape}')
+        print(f'      [Nat Layer] Output of size:{x.shape}')
         return x
 
 
@@ -153,6 +153,7 @@ class NATBlock(nn.Module):
 
 
         for blk in self.blocks:
+            print(f'    [NAT block] Input of size:{x.shape}')
             # learn prototypes
             pixel_classes = torch.nn.functional.softmax(x @ self.prototypes, dim=3)
             attentive_prototypes = pixel_classes @ self.prototypes.t()
@@ -160,8 +161,10 @@ class NATBlock(nn.Module):
             # apply NAT layer
             x = blk(x)
 
+
         if self.downsample is None:
             return x
+        print(f'    [NAT block] Output of size:{x.shape}')
         return self.downsample(x)
 
 
@@ -230,31 +233,31 @@ class NAT(nn.Module):
         return {'rpb'}
 
     def forward_features(self, x):
-        print(f'[NAT] Input of size: {x.shape}')
+        print(f'  [NAT] Input of size: {x.shape}')
         x = self.patch_embed(x)
-        print(f'[NAT] Patch embed: {x.shape}')
+        print(f'  [NAT] Patch embed: {x.shape}')
         x = self.pos_drop(x)
-        print(f'[NAT] Pos drop: {x.shape}')
+        print(f'  [NAT] Pos drop: {x.shape}')
 
         for level in self.levels:
             x = level(x)
-            print(f'[NAT] Level out: {x.shape}')
+            print(f'  [NAT] Level out: {x.shape}')
 
 
         x = self.norm(x).flatten(1, 2)
-        print(f'flatten 1 out: {x.shape}')
+        print(f'  [NAT] flatten 1 out: {x.shape}')
         x = self.avgpool(x.transpose(1, 2))
-        print(f'avg pool out: {x.shape}')
+        print(f'  [NAT] avg pool out: {x.shape}')
         x = torch.flatten(x, 1)
-        print(f'flatten 2 out: {x.shape}')
+        print(f'  [NAT] flatten 2 out: {x.shape}')
         return x
 
     def forward(self, x):
-        print(f'NAT starting: {x.shape}')
+        print(f'[Transformer NAT] starting: {x.shape}')
         x = self.forward_features(x)
-        print(f'NAT fwd: {x.shape}')
+        print(f'[Transformer NAT] fwd: {x.shape}')
         x = self.head(x)
-        print(f'NAT head: {x.shape}')
+        print(f'[Transformer NAT] head: {x.shape}')
         return x
 
 
