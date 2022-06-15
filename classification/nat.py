@@ -94,18 +94,22 @@ class NATLayer(nn.Module):
             self.gamma2 = nn.Parameter(layer_scale * torch.ones(dim), requires_grad=True)
 
     def forward(self, x):
+        print(f'[Nat Layer] Input of size:{x.shape}')
         if not self.layer_scale:
             shortcut = x
             x = self.norm1(x)
+            print(f'[Nat Layer] Applying NAT to tensor of size:{x.shape}')
             x = self.attn(x)
             x = shortcut + self.drop_path(x)
             x = x + self.drop_path(self.mlp(self.norm2(x)))
             return x
         shortcut = x
         x = self.norm1(x)
+        print(f'[Nat Layer] Applying NAT to tensor of size:{x.shape}')
         x = self.attn(x)
         x = shortcut + self.drop_path(self.gamma1 * x)
         x = x + self.drop_path(self.gamma2 * self.mlp(self.norm2(x)))
+        print(f'[Nat Layer] Output of size:{x.shape}')
         return x
 
 
@@ -152,10 +156,9 @@ class NATBlock(nn.Module):
             pixel_classes = torch.nn.functional.softmax(x @ self.prototypes, dim=3)
             attentive_prototypes = pixel_classes @ self.prototypes.t()
             x = x + attentive_prototypes
-            # apply NAT
-            print(x.shape)
+            # apply NAT layer
             x = blk(x)
-            print(x.shape)
+
         if self.downsample is None:
             return x
         return self.downsample(x)
