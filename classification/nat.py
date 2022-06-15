@@ -155,9 +155,9 @@ class NATBlock(nn.Module):
         for blk in self.blocks:
             #print(f'    [NAT block] Input of size:{x.shape}')
             # learn prototypes
-            pixel_classes = torch.nn.functional.softmax(x @ self.prototypes, dim=3)
-            attentive_prototypes = pixel_classes @ self.prototypes.t()
-            x = x + attentive_prototypes
+            #pixel_classes = torch.nn.functional.softmax(x @ self.prototypes, dim=3)
+            #attentive_prototypes = pixel_classes @ self.prototypes.t()
+            #x = x + attentive_prototypes
             # apply NAT layer
             x = blk(x)
 
