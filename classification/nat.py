@@ -102,6 +102,7 @@ class NATLayer(nn.Module):
             x = self.attn(x)
             x = shortcut + self.drop_path(x)
             x = x + self.drop_path(self.mlp(self.norm2(x)))
+            print(f'[Nat Layer] Output of size:{x.shape}')
             return x
         shortcut = x
         x = self.norm1(x)
@@ -229,15 +230,15 @@ class NAT(nn.Module):
         return {'rpb'}
 
     def forward_features(self, x):
-        print(f'NAT input: {x.shape}')
+        print(f'[NAT] Input of size: {x.shape}')
         x = self.patch_embed(x)
-        print(f'Patch embed: {x.shape}')
+        print(f'[NAT] Patch embed: {x.shape}')
         x = self.pos_drop(x)
-        print(f'Pos drop: {x.shape}')
+        print(f'[NAT] Pos drop: {x.shape}')
 
         for level in self.levels:
             x = level(x)
-            print(f'level out: {x.shape}')
+            print(f'[NAT] Level out: {x.shape}')
 
 
         x = self.norm(x).flatten(1, 2)
