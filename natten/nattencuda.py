@@ -4,6 +4,8 @@ Neighborhood Attention PyTorch Module (CUDA only)
 This source code is licensed under the license found in the
 LICENSE file in the root directory of this source tree.
 """
+import math
+
 import torch
 from torch import nn
 from torch.nn.functional import pad
@@ -81,7 +83,7 @@ class NATTENQKRPBFunction(Function):
         d_query, d_key, d_rpb = outputs
         return d_query, d_key, d_rpb
 
-
+# CHANGING THIS MODULE FOR SIDE SEGMETATION
 class NeighborhoodAttention(nn.Module):
     """
     Neighborhood Attention Module
@@ -104,6 +106,8 @@ class NeighborhoodAttention(nn.Module):
         self.attn_drop = nn.Dropout(attn_drop)
         self.proj = nn.Linear(dim, dim)
         self.proj_drop = nn.Dropout(proj_drop)
+
+
 
     def forward(self, x):
         B, H, W, C = x.shape
