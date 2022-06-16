@@ -85,7 +85,7 @@ class NeighborhoodAttention(nn.Module):
     """
     Neighborhood Attention Module
     """
-    def __init__(self, dim, kernel_size, num_heads,
+    def __init__(self, dim, kernel_size, num_heads, num_classes=3,
                  qkv_bias=True, qk_scale=None, attn_drop=0., proj_drop=0.):
         super().__init__()
         self.num_heads = num_heads
@@ -104,10 +104,23 @@ class NeighborhoodAttention(nn.Module):
         self.proj = nn.Linear(dim, dim)
         self.proj_drop = nn.Dropout(proj_drop)
 
+        # Initialize protoypes.
+        print('Initializing NAT module with prototypes.')
+        self.prototypes = torch.nn.Parameter(torch.Tensor(dim, num_classes), requires_grad=True)
+        self.prototypes.data.uniform_(-1, 1)
+
 
 
     def forward(self, x):
         B, H, W, C = x.shape
+        # This should go before each attention layer.
+        print(f'[NAT Module] Processing tensor of size: {x.shape}')
+        print(f'[NAT Module] Processing prototypes of size: {self.prototypes.shape}')
+        pixel_classes = torch.nn.functional.softmax(x @ self.prototypes, dim=3)
+        print(f'[NAT Module] Computed pixel classes of shape: {pixel_classes.shape}')
+        attentive_prototypes = pixel_classes @ self.prototypes.t()
+        print(f'[NAT Module] Computed attentive prototypes of shape: {attentive_prototypes.shape}')
+
         N = H * W
         num_tokens = int(self.kernel_size ** 2)
         pad_l = pad_t = pad_r = pad_b = 0
@@ -123,6 +136,7 @@ class NeighborhoodAttention(nn.Module):
             assert N == num_tokens, f"Something went wrong. {N} should equal {H} x {W}!"
         qkv = self.qkv(x).reshape(B, H, W, 3, self.num_heads, self.head_dim).permute(3, 0, 4, 1, 2, 5)
         q, k, v = qkv[0], qkv[1], qkv[2]
+        print(f'[NAT Module] q shape:{q.shape}') # B, heads, H, W, head_dim
         q = q * self.scale
         attn = NATTENQKRPBFunction.apply(q, k, self.rpb)
         attn = attn.softmax(dim=-1)
