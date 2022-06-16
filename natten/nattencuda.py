@@ -134,7 +134,12 @@ class NeighborhoodAttention(nn.Module):
             B, H, W, C = x.shape
             N = H * W
             assert N == num_tokens, f"Something went wrong. {N} should equal {H} x {W}!"
-        qkv = self.qkv(x).reshape(B, H, W, 3, self.num_heads, self.head_dim).permute(3, 0, 4, 1, 2, 5)
+        qkv = self.qkv(x)
+        print(f'[NAT Module] qkv shape:{qkv.shape}')
+        qkv = qkv.reshape(B, H, W, 3, self.num_heads, self.head_dim)
+        print(f'[NAT Module] reshaped qkv shape:{qkv.shape}')
+        qkv = qkv.permute(3, 0, 4, 1, 2, 5)
+        print(f'[NAT Module] permuted qkv shape:{qkv.shape}')
         q, k, v = qkv[0], qkv[1], qkv[2]
         print(f'[NAT Module] q shape:{q.shape}') # B, heads, H, W, head_dim
         q = q * self.scale
