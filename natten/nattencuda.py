@@ -105,7 +105,7 @@ class NeighborhoodAttention(nn.Module):
         self.proj_drop = nn.Dropout(proj_drop)
 
         # Initialize protoypes.
-        print('Initializing NAT module with prototypes.')
+        print('Initializing NAT Module with prototypes.')
         self.prototypes = torch.nn.Parameter(torch.Tensor(dim, num_classes), requires_grad=True)
         self.prototypes.data.uniform_(-1, 1)
 
@@ -114,12 +114,13 @@ class NeighborhoodAttention(nn.Module):
     def forward(self, x):
         B, H, W, C = x.shape
         # This should go before each attention layer.
-        print(f'[NAT Module] Processing tensor of size: {x.shape}')
-        print(f'[NAT Module] Processing prototypes of size: {self.prototypes.shape}')
+        #print(f'[NAT Module] Processing tensor of size: {x.shape}')
+        #print(f'[NAT Module] Processing prototypes of size: {self.prototypes.shape}')
         pixel_classes = torch.nn.functional.softmax(x @ self.prototypes, dim=3)
-        print(f'[NAT Module] Computed pixel classes of shape: {pixel_classes.shape}')
+        #print(f'[NAT Module] Computed pixel classes of shape: {pixel_classes.shape}')
         attentive_prototypes = pixel_classes @ self.prototypes.t()
-        print(f'[NAT Module] Computed attentive prototypes of shape: {attentive_prototypes.shape}')
+        #print(f'[NAT Module] Computed attentive prototypes of shape: {attentive_prototypes.shape}')
+        x = x + attentive_prototypes
 
         N = H * W
         num_tokens = int(self.kernel_size ** 2)
@@ -135,13 +136,13 @@ class NeighborhoodAttention(nn.Module):
             N = H * W
             assert N == num_tokens, f"Something went wrong. {N} should equal {H} x {W}!"
         qkv = self.qkv(x)
-        print(f'[NAT Module] qkv shape:{qkv.shape}')
+        #print(f'[NAT Module] qkv shape:{qkv.shape}')
         qkv = qkv.reshape(B, H, W, 3, self.num_heads, self.head_dim)
-        print(f'[NAT Module] reshaped qkv shape:{qkv.shape}')
+        #print(f'[NAT Module] reshaped qkv shape:{qkv.shape}')
         qkv = qkv.permute(3, 0, 4, 1, 2, 5)
-        print(f'[NAT Module] permuted qkv shape:{qkv.shape}')
+        #print(f'[NAT Module] permuted qkv shape:{qkv.shape}')
         q, k, v = qkv[0], qkv[1], qkv[2]
-        print(f'[NAT Module] q shape:{q.shape}') # B, heads, H, W, head_dim
+        #print(f'[NAT Module] q shape:{q.shape}') # B, heads, H, W, head_dim
         q = q * self.scale
         attn = NATTENQKRPBFunction.apply(q, k, self.rpb)
         attn = attn.softmax(dim=-1)
