@@ -12,7 +12,7 @@ from timm.models.layers import trunc_normal_
 import warnings
 
 
-class LegacyNeighborhoodAttention(nn.Module):
+class LegacyNeighborhoodAttentionPrototypes(nn.Module):
     def __init__(self, dim, kernel_size, num_heads,
                  qkv_bias=True, qk_scale=None, attn_drop=0., proj_drop=0.,
                  mode=1):
@@ -38,6 +38,12 @@ class LegacyNeighborhoodAttention(nn.Module):
         self.idx_h = torch.arange(0, kernel_size)
         self.idx_w = torch.arange(0, kernel_size)
         self.idx_k = ((self.idx_h.unsqueeze(-1) * self.rpb_size) + self.idx_w).view(-1)
+
+        # Initialize protoypes.
+        print('Initializing NAT Module with prototypes.')
+        self.prototypes = torch.nn.Parameter(torch.Tensor(dim, num_classes), requires_grad=True)
+        self.prototypes.data.uniform_(-1, 1)
+
         warnings.warn("This is the legacy version of NAT WITH PROTOTYPES -- it uses unfold+pad to produce NAT, and is highly inefficient.")
 
 
@@ -63,6 +69,11 @@ class LegacyNeighborhoodAttention(nn.Module):
         num_tokens = int(self.kernel_size ** 2)
         pad_l = pad_t = pad_r = pad_b = 0
         Ho, Wo = H, W
+
+        # Apply prototypes
+        pixel_classes = torch.nn.functional.softmax(x @ self.prototypes, dim=3)
+        attentive_prototypes = pixel_classes @ self.prototypes.t()
+        x = x + attentive_prototypes
 
         if N <= num_tokens:
             if self.kernel_size > W:

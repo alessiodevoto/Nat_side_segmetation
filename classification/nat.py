@@ -9,8 +9,8 @@ import torch
 import torch.nn as nn
 from timm.models.layers import trunc_normal_, DropPath
 from timm.models.registry import register_model
-from natten import NeighborhoodAttention
-
+from natten import LegacyNeighborhoodAttentionPrototypes as NeighborhoodAttention1
+from natten import LegacyNeighborhoodAttention as NeighborhoodAttention2
 
 model_urls = {
     "nat_mini_1k": "http://ix.cs.uoregon.edu/~alih/nat/checkpoints/CLS/nat_mini.pth",
