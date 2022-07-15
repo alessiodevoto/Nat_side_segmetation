@@ -13,7 +13,7 @@ import warnings
 
 
 class LegacyNeighborhoodAttentionPrototypes(nn.Module):
-    def __init__(self, dim, kernel_size, num_heads,
+    def __init__(self, dim, kernel_size, num_heads, num_classes=3,
                  qkv_bias=True, qk_scale=None, attn_drop=0., proj_drop=0.,
                  mode=1):
         super().__init__()
